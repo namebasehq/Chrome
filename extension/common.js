@@ -51,7 +51,7 @@
 */
 
 // Update manifest when this list is changed.
-var apiBase = 'http://localhost:3000/';
+var apiBase = 'https://namebase.now.sh/';
 
 var apiTimeout = 5000;
 

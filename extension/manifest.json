@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Namebase Handshake Extension",
   "short_name": "NHE",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Resolves domains from Handshake",
   "icons": {
     "16": "icon-16.png",
