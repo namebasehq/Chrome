@@ -33,7 +33,7 @@ var cache = {
   set: function (domain, ips) {
     if (toString.call(domain) != '[object String]' || !domain.match(/^[\w\-.]+$/)
         || !Array.isArray(ips)) {
-      throw 'BDNS: cache.set(): bad argument(s)';
+      throw 'NHE: cache.set(): bad argument(s)';
     }
 
     var existed = cache.has(domain);

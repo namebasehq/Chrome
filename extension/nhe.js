@@ -110,7 +110,7 @@ var pac = {
     };
 
     chrome.proxy.settings.set({value: config}, function () {
-      console.log('BDNS: set new PAC script, length = ' + script.length); //-
+      console.log('NHE: set new PAC script, length = ' + script.length); //-
     });
   },
 
@@ -123,57 +123,33 @@ cache.onIpChange = pac.onIpChange;
 cache.onDomainDelete = pac.onDomainDelete;
 
 chrome.webRequest.onBeforeRequest.addListener(function (details) {
-  //console.dir(details);
-
   var url = parseURL(details.url);
 
-  if (url) {
-    var ips = cache.ips(url.domain);
+  if (!url || !url.tld || isNormalURL(url)) {
+    return;
+  }
 
-    if (ips) {
-      console.log('BDNS: #' + details.requestId + ' (' + url.domain + '): already resolved to ' + ips + '; cache size = ' + cache.length); //-
+  const ips = cache.ips(url.domain);
 
-      // No need to update visited domains' times like in Firefox because
-      // even if newly resolved IPs change from the ones user used to visit the
-      // resource, this won't impair his experience (POST will be properly sent
-      // to a new working IP, etc.).
-      if (!ips.length) {
-        showThrottledNotification(url.domain, 'Non-existent .' + url.tld + ' domain: ' + url.domain);
-        return {cancel: true};
+  if (ips) {
+    console.log('NHE: #' + details.requestId + ' (' + url.domain + '): already resolved to ' + ips + '; cache size = ' + cache.length); //-
+  } else {
+    console.log('NHE: #' + details.requestId + ' (' + url.domain + '): resolving, full URL: ' + url.url); //-
+
+    resolveViaAPI(url.domain, false, function (ips) {
+      if (ips && ips.length) {
+        cache.set(url.domain, ips);
       }
-    } else {
-      console.log('BDNS: #' + details.requestId + ' (' + url.domain + '): resolving, full URL: ' + url.url); //-
+    });
 
-      var res = {cancel: true};
-
-      resolveViaAPI(url.domain, false, function (ips) {
-        // On error or {cancel}, Chrome fires 1-2 more same requests which cause
-        // repeated notifications.
-        if (!ips) {
-          showThrottledNotification(url.domain, 'Resolution of .' + url.tld + ' is temporary unavailable');
-          rotateApiHost();
-        } else if (!ips.length) {
-          cache.set(url.domain, []);
-          showThrottledNotification(url.domain, 'Non-existent .' + url.tld + ' domain: ' + url.domain);
-        } else {
-          cache.set(url.domain, ips);
-          res = null;
-        }
-      });
-
-      console.log('BDNS: #' + details.requestId + ' (' + url.domain + '): resolution finished, returning ' + res); //-
-
-      return res;
-    }
+    console.log('NHE: #' + details.requestId + ' (' + url.domain + '): resolution finished, returning ' + res); //-
   }
 }, allURLs, ["blocking"]);
 
 chrome.webRequest.onErrorOccurred.addListener(function (details) {
-  //console.dir(details);
-
   var req = details.requestId;
   var url = parseURL(details.url);
-  console.log('BDNS: #' + req + ' (' + url.domain + '): ' + details.error); //-
+  console.log('NHE: #' + req + ' (' + url.domain + '): ' + details.error); //-
 
   switch (details.error) {
   // Proxy error. Fired once, only if all IPs from the list of domain's IPs are down.
@@ -190,42 +166,11 @@ chrome.alarms.create({periodInMinutes: 1});
 
 chrome.alarms.onAlarm.addListener(function () {
   var count = cache.prune();
-  console.log('BDNS: deleted ' + count + ' expired entries; cache size = ' + cache.length); //-
-});
-
-var tabSupport = {};
-var activeTab;
-
-chrome.tabs.onActivated.addListener(function (info) {
-  activeTab = info.tabId;
-  console.info('BDNS: tab #' + activeTab + ' now active'); //-
-
-  var supported = tabSupport[activeTab];
-  chrome.browserAction[!supported ? 'enable' : 'disable']();
-});
-
-chrome.tabs.onUpdated.addListener(function (id, changeInfo) {
-  var url = parseURL(changeInfo.url || '');
-
-  if (url) {
-    var supported = isSupportedTLD(url.tld);
-
-    console.info('BDNS: tab #' + id + ' updated to ' + (supported ? '' : 'un') + 'supported TLD, domain: ' + url.domain); //-
-
-    if (supported) {
-      tabSupport[id] = supported;
-    }
-
-    if (activeTab == id) {
-      // Passing tabId doesn't seem to stick in Chrome like it does in Firefox;
-      // button's state is not restored when switching tabs.
-      chrome.browserAction[!supported ? 'enable' : 'disable']();
-    }
-  }
+  console.log('NHE: deleted ' + count + ' expired entries; cache size = ' + cache.length); //-
 });
 
 chrome.browserAction.onClicked.addListener(function () {
   chrome.tabs.create({
-    url: "https://blockchain-dns.info"
+    url: "https://namebase.io"
   });
 });

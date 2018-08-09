@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "Namebase Handshake Extension",
+  "short_name": "NHE",
+  "version": "0.0.1",
+  "description": "Resolves domains from Handshake",
+  "icons": {
+    "16": "icon-16.png",
+    "24": "icon-24.png",
+    "32": "icon-32.png",
+    "64": "icon-64.png",
+    "128": "icon-128.png"
+  },
+  "browser_action": {
+    "browser_style": false,
+    "default_icon": {
+      "16": "icon-16.png",
+      "24": "icon-24.png",
+      "32": "icon-32.png",
+      "64": "icon-64.png",
+      "128": "icon-128.png"
+    }
+  },
+  "background": {
+    "scripts": ["common.js", "cache.js", "nhe.js"]
+  },
+  "permissions": [
+    "webRequest", "webRequestBlocking", "proxy", "notifications", "alarms", "tabs",
+    "<all_urls>"
+  ],
+  "homepage_url": "https://namebase.io"
+}
