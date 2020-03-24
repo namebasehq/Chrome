@@ -1,4 +1,6 @@
-# Namebase Handshake Extension
+# Namebase Handshake Extension (DEPRECATED)
+
+**This extension is deprecated. Please use a resolver like [NextDNS.io](https://nextdns.io) to resolve Handshake names**
 
 NHE addon for Chrome lets you browse Handshake domains:
 
